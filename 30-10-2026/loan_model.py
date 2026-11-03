@@ -60,24 +60,34 @@ class LoanApprovalApp:
         }
          return pd.DataFrame([data])
 
-    def two_stage_predict(self, applicant_df):
-        out ={}
+   
+def two_stage_predict(self, applicant_df):
+    out = {}
 
-        applicant_df = applicant_df[self.clf.feature_names_in_]
+    applicant_df = applicant_df.copy()
 
-        approve = self.clf.predict(applicant_df)[0]
-        print(approve)
-        out["approve"] = int(approve)
+    applicant_df["education"] = " " + applicant_df["education"].str.strip()
+    applicant_df["self_employed"] = " " + applicant_df["self_employed"].str.strip()
 
-        if approve ==1:
-            applicant_df_reg = applicant_df.copy()
-            applicant_df_reg['loan_status'] = 'Approve'
-            pred = self.reg.predict(applicant_df_reg)[0]
-            out["regression_prediction"] = float(pred)
-        else:
-            out["regression_prediction"] = None
+    applicant_df = applicant_df[self.clf.feature_names_in_]
 
-        return out        
+    approve = self.clf.predict(applicant_df)[0]
+    print(approve)
+
+    out["approve"] = int(approve)
+
+    if approve == 1:
+        applicant_df_reg = applicant_df.copy()
+        applicant_df_reg['loan_status'] = 'approved'
+
+        pred = self.reg.predict(applicant_df_reg)[0]
+
+        out["regression_prediction"] = float(pred)
+    else:
+        out["regression_prediction"] = None
+
+    return out
+     
 
     def run(self):
         applicant_df= self.get_user_input()
